@@ -2,19 +2,19 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>نادي الأمن السيبراني</title>
 <meta name="description" content="منصة العمل الداخلية لنادي الأمن السيبراني بجامعة جازان">
 <meta name="theme-color" content="#0c1d86">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="النادي">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <style>
-  html,body{margin:0;height:100%;background:#04105a;overflow:hidden}
+  html,body{margin:0;height:100%;background:#f4f5f8;overflow:hidden}
   iframe{position:fixed;inset:0;width:100%;height:100%;border:0;display:block}
   .ld{position:fixed;inset:0;display:grid;place-items:center;color:#c3cdf6;font:500 15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;
       background:linear-gradient(165deg,#0c1d86,#04105a 55%,#020a3d);transition:opacity .3s}
@@ -30,7 +30,21 @@
   var BASE = 'https://script.google.com/macros/s/AKfycbwfZT0QD2VCGEKlYHCII3eWDnnTiSRqKs4VfM7smZNj0BlEU13Ui6znURxSkq66Fg_szg/exec';
   var f = document.getElementById('app'), ld = document.getElementById('ld');
   f.addEventListener('load', function () { setTimeout(function () { ld.className = 'ld out'; }, 400); });
-  f.src = BASE + (location.search || '');
+  // داخل التطبيق المثبّت: نبلّغ المنصة عشان تخفي زر «ثبّت المنصة»
+  var inApp = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  // حفظ الدخول: المنصة ترسل رمز الجهاز لهذي الصفحة، ونرجّعه لها كل مرة تفتح
+  var TK = 'club_tok', tok = '';
+  try { tok = (localStorage.getItem(TK) || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 64); } catch (e) {}
+  window.addEventListener('message', function (ev) {
+    if (!/^https:\/\/[a-z0-9-]+\.googleusercontent\.com$/.test(ev.origin)) return;
+    var d = ev.data; if (!d || d.club !== 'tok') return;
+    var t = String(d.t || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 64);
+    try { if (t) localStorage.setItem(TK, t); else localStorage.removeItem(TK); } catch (e) {}
+  });
+  var q = location.search || '';
+  if (inApp) q += (q ? '&' : '?') + 'app=1';
+  if (tok && !/[?&]k=/.test(q)) q += (q ? '&' : '?') + 'k=' + tok;
+  f.src = BASE + q;
 </script>
 </body>
 </html>
